@@ -1,7 +1,7 @@
 var fortune = require('./lib/fortune.js');
 
+// express
 var express = require('express');
-
 var app = express();
 
 // handlebars模板引擎
@@ -15,7 +15,13 @@ app.set('port', process.env.PORT || 3000);
 // 静态资源目录
 app.use(express.static(__dirname + '/public'));
 
-//开始路由
+// 判断非产品状态 并且查询字符串中有test=1 
+app.use(functon(req, res, next){
+	res.locals.showTests = app.get('env') !== 'production' &&
+		req.query.test === '1';
+});
+
+// 开始路由
 app.get('/', function(req, res){
 	res.render('home');
 });
