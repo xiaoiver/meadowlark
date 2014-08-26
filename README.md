@@ -23,3 +23,9 @@ package.json包含了依赖。npm install进行安装
 }
 ```
 exports可以封装方法供外界调用。
+
+require加载路径`./`告诉node不去node_modules目录下查找
+
+## ch5 qa
+测试框架mocha，第三方js和css放在public/vendor下
+assertion库chai
