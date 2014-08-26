@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "mocha": "^1.21.4"
+  },
+  "dependencies": {
+    "express": "^4.8.5",
+    "express3-handlebars": "^0.5.2"
+  }
+}
