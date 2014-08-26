@@ -29,3 +29,20 @@ require加载路径`./`告诉node不去node_modules目录下查找
 ## ch5 qa
 测试框架mocha，第三方js和css放在public/vendor下
 assertion库chai
+
+app.use中next()
+
+## 页面跳转测试
+headless browser PhantomJs,Zombie
+zombie暂时还不支持windows平台
+
+## 逻辑测试
+`npm install -g mocha`全局安装
+`mocha -u tdd -R spec qa/tests-unit.js`单元测试
+
+## 检验框架
+`npm install -g jshint`
+`jshint meadowlark.js`
+
+## 链接检测
+检测死链接linkchecker http://localhost:3000
