@@ -34,6 +34,7 @@ app.get('/about', function(req, res){
 	});
 });
 
+//页面跳转测试
 app.get('/tours/hood-river', function(req, res){
 	res.render('tours/hood-river');
 });

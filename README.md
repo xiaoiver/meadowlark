@@ -37,6 +37,7 @@ app.use中next()
 ## 页面跳转测试
 headless browser PhantomJs,Zombie
 zombie暂时还不支持windows平台
+mocha默认时间太短导致测试出错，通过`--timeout 15000`[增加时间][mocha-timeout]
 
 ## 逻辑测试
 `npm install -g mocha`全局安装
@@ -48,3 +49,5 @@ zombie暂时还不支持windows平台
 
 ## 链接检测
 检测死链接linkchecker http://localhost:3000
+
+[mocha-timeout]:[http://stackoverflow.com/questions/16607039/in-mocha-testing-while-calling-asynchronous-function-how-to-avoid-the-timeout-er]
