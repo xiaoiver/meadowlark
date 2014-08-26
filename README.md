@@ -12,6 +12,8 @@ express中路由的顺序很重要，如果404handler放在routes之前，都会
 
 `git add`命令只是增加改变而不是文件。`git add -A`增加全部。
 `git commit -m "message"`提交改变
+`git remote add origin git@github.com:xiaoiver/meadowlark.git`
+`git push -u origin master`
 
 package.json包含了依赖。npm install进行安装
 ```javascript
