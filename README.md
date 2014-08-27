@@ -45,9 +45,34 @@ mocha默认时间太短导致测试出错，通过`--timeout 15000`[增加时间
 
 ## 检验框架
 `npm install -g jshint`
+
 `jshint meadowlark.js`
 
-## 链接检测
-检测死链接linkchecker http://localhost:3000
+`if( app.thing == null ) console.log( 'bleat!' );`会提示使用===代替==
 
-[mocha-timeout]:[http://stackoverflow.com/questions/16607039/in-mocha-testing-while-calling-asynchronous-function-how-to-avoid-the-timeout-er]
+## 链接检测
+检测死链接，循环链接[linkchecker][linkchecker-download]
+
+`python setup.py build`需要安装request
+
+* 首先安装pip`sudo apt-get install python-pip`
+* 通过pip安装`pip install requests`
+
+`python setup.py install`时报错“python.h 没有那个文件或目录”
+原因是没有安装Python的头文件和静态库包`sudo apt-get install python-dev`
+
+`linkchecker http://localhost:3000`检查
+
+## Grunt自动运行测试任务
+安装grunt`sudo npm install -g grunt-cli`
+`npm install --save-dev grunt`
+
+Grunt依赖插件完成工作如mocha,jshint和linkchecker。由于linkchecker没有对应插件
+使用通用插件exec执行命令行。
+`npm install --save-dev grunt-cafe-mocha`
+`npm install --save-dev grunt-contrib-jshint`
+`npm install --save-dev grunt-exec`
+
+
+[mocha-timeout]: [http://stackoverflow.com/questions/16607039/in-mocha-testing-while-calling-asynchronous-function-how-to-avoid-the-timeout-er]
+[linkchecker-download]: [http://wummel.github.io/linkchecker]
