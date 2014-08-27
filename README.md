@@ -36,11 +36,14 @@ app.use中next()
 
 ## 页面跳转测试
 headless browser PhantomJs,Zombie
+
 zombie暂时还不支持windows平台
-mocha默认时间太短导致测试出错，通过`--timeout 15000`[增加时间][mocha-timeout]
+
+mocha默认时间太短导致测试出错，通过`--timeout 15000`[增加时间](mocha-timeout)
 
 ## 逻辑测试
 `npm install -g mocha`全局安装
+
 `mocha -u tdd -R spec qa/tests-unit.js`单元测试
 
 ## 检验框架
@@ -51,7 +54,7 @@ mocha默认时间太短导致测试出错，通过`--timeout 15000`[增加时间
 `if( app.thing == null ) console.log( 'bleat!' );`会提示使用===代替==
 
 ## 链接检测
-检测死链接，循环链接[linkchecker][linkchecker-download]
+检测死链接，循环链接[linkchecker](linkchecker-download)
 
 `python setup.py build`需要安装request
 
@@ -59,6 +62,7 @@ mocha默认时间太短导致测试出错，通过`--timeout 15000`[增加时间
 * 通过pip安装`pip install requests`
 
 `python setup.py install`时报错“python.h 没有那个文件或目录”
+
 原因是没有安装Python的头文件和静态库包`sudo apt-get install python-dev`
 
 `linkchecker http://localhost:3000`检查
@@ -69,8 +73,11 @@ mocha默认时间太短导致测试出错，通过`--timeout 15000`[增加时间
 
 Grunt依赖插件完成工作如mocha,jshint和linkchecker。由于linkchecker没有对应插件
 使用通用插件exec执行命令行。
+
 `npm install --save-dev grunt-cafe-mocha`
+
 `npm install --save-dev grunt-contrib-jshint`
+
 `npm install --save-dev grunt-exec`
 
 
