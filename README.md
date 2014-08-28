@@ -120,5 +120,127 @@ get请求没有请求体，post请求有
 ### Express源码
 p61
 
+### 展示内容
+即使没有用到next()，也要显式写出告诉Express这是错误处理
+```javascript
+app.use(function(err, req, res, next){
+    console.error(err.stack);
+    res.status(500).render('error');
+});
+```
 
+### 处理表单
 
+```javascript
+app.post('/process-contact', function(req, res){
+    console.log('Received contact from ' + req.body.name +
+        ' <' + req.body.email + '>');
+    try {
+        // save to database....
+        return res.xhr ?
+            res.render({ success: true }) :
+            res.redirect(303, '/thank-you');
+    } catch(ex) {
+        return res.xhr ?
+            res.json({ error: 'Database error.' }) :
+            res.redirect(303, '/database-error');
+    }
+});
+```
+
+### 提供api
+Restful GET,POST,PUT,DELETE，类似rails
+
+app.get/post/put/del
+
+## ch7 handlebars
+js通过document.write生成html代码，但是存在问题
+* 字符转意问题
+* html代码中可能还包含js，让人抓狂
+* 编辑中代码高亮等功能无效
+* 可读性差
+
+### Jade
+Express[作者](http://jade-lang.com)
+
+不需要闭合标签
+
+### Handlebars基础
+上下文对象`{ name: 'Buttercup' }`，在模板中通过`{{name}}`就能得到值
+
+如果想要传递的是html代码，需要使用`{{{name}}}`
+
+### 注释
+`{{! super-secret comment }}`和<!-- not-so-secret comment -->的区别就是后者能通过查看源码看到。
+
+### 块
+
+```javascript
+{
+    currency: {
+        name: 'United States dollars',
+        abbrev: 'USD',
+    },
+    tours: [
+        { name: 'Hood River', price: '$99.95' },
+        { name: 'Oregon Coast', price, '$159.95' },
+    ],
+    specialsUrl: '/january-specials',
+    currencies: [ 'USD', 'GBP', 'BTC' ],
+}
+```
+使用`../`退回上一层上下文，`{{.}}`代表当前的上下文
+
+```javascript
+<ul>
+    {{#each tours}}
+        {{! I'm in a new block...and the context has changed }}
+        <li>
+            {{name}} - {{price}}
+            {{#if ../currencies}}
+                ({{../../currency.abbrev}})
+            {{/if}}
+        </li>
+    {{/each}}
+</ul>
+```
+if和each都有可选的else块。
+
+如果有一个helper叫foo，`{{foo}}`指向它，而`{{./foo}}`指向当前上下文的同名属性。
+
+### 服务端模板
+
+安装handlebars`npm install --save express3-handlebars`
+
+改变扩展名`require('express3-handlebars').create({ extname: '.hbs' })`
+
+默认view cache只在生产模式下打开，在开发模式下打开`app.set('view cache', true);`
+
+### partials
+和rails中一样，存放在views/partials/文件夹下，也可以建立子文件夹。 
+
+`{{> weather}}` `{{> social/facebook}}` ch10
+
+### sections
+handlebars中没有直接实现，但可以通过使用helper
+
+```javascript
+var handlebars = require('express3-handlebars').create({
+    defaultLayout:'main',
+    helpers: {
+        section: function(name, options){
+            if(!this._sections) this._sections = {};
+            this._sections[name] = options.fn(this);
+            return null;
+        }
+    }
+});
+```
+
+### 完善模板
+使用html5boilerplate
+
+### 客户端handlebars
+Handlebars.compile()将模板编译返回一个function，接受传入的参数
+
+## ch8 表单处理

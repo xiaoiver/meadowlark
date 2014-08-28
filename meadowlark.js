@@ -6,7 +6,16 @@ var app = express();
 
 // handlebars模板引擎
 var handlebars = require('express3-handlebars')
-	.create({ defaultLayout:'main' });
+	.create({ 
+		defaultLayout:'main',
+		helpers: {
+	        section: function(name, options){
+	            if(!this._sections) this._sections = {};
+	            this._sections[name] = options.fn(this);
+	            return null;
+	        }
+    	}
+	});
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
@@ -48,6 +57,24 @@ app.get('/headers', function(req,res){
 	var s = '';
 	for(var name in req.headers) s += name + ': ' + req.headers[name] + '\n';
 	res.send(s);
+});
+
+// 测试section
+app.get('/test-jquery', function(req, res){
+	res.render('test-jquery');
+});
+
+// 测试客户端handlebars
+app.get('/test-client-side', function(req, res){
+	res.render('test-client-side');
+});
+app.get('/data/test-client-side', function(req, res){
+	res.json({
+		animal: 'squirrel',
+		bodyPart: 'tail',
+		adjective: 'bushy',
+		noun: 'heck',
+	});
 });
 
 // custom 404 page
