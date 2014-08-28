@@ -34,12 +34,20 @@ app.get('/about', function(req, res){
 	});
 });
 
-//页面跳转测试
+// 页面跳转测试
 app.get('/tours/hood-river', function(req, res){
 	res.render('tours/hood-river');
 });
 app.get('/tours/request-group-rate', function(req, res){
 	res.render('tours/request-group-rate');
+});
+
+// 展示请求头信息
+app.get('/headers', function(req,res){
+	res.set('Content-Type','text/plain');
+	var s = '';
+	for(var name in req.headers) s += name + ': ' + req.headers[name] + '\n';
+	res.send(s);
 });
 
 // custom 404 page

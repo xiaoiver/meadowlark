@@ -14,20 +14,9 @@ suite('Cross-Page Tests', function(){
 		var referrer = 'http://localhost:3000/tours/hood-river';
 		browser.visit(referrer, function(){
 			browser.clickLink('.requestGroupRate', function(){
-				assert(browser.field('referrer').value === referrer);
-				done();
+				assert(browser.field('referrer').value === referrer);			
 			});
-		});
-	});
-
-	test('requesting a group rate from the oregon coast tour page should ' +
-			'populate the hidden referrer field correctly', function(done){
-		var referrer = 'http://localhost:3000/tours/oregon-coast-getaway';
-		browser.visit(referrer, function(){
-			browser.clickLink('.requestGroupRate', function(){
-				assert(browser.field('referrer').value === referrer);
-				done();
-			});
+			done();	
 		});
 	});
 
@@ -38,5 +27,4 @@ suite('Cross-Page Tests', function(){
 			done();
 		});
 	});
-
 });
