@@ -9,7 +9,10 @@
     "zombie": "~2.0.0-alpha31"
   },
   "dependencies": {
+    "body-parser": "^1.6.6",
     "express": "^4.8.5",
-    "express3-handlebars": "^0.5.2"
+    "express3-handlebars": "^0.5.2",
+    "formidable": "^1.0.15",
+    "jquery-file-upload-middleware": "^0.1.5"
   }
 }

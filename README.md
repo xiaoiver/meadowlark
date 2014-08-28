@@ -244,3 +244,49 @@ var handlebars = require('express3-handlebars').create({
 Handlebars.compile()将模板编译返回一个function，接受传入的参数
 
 ## ch8 表单处理
+推荐使用303重定向而不是302响应表单提交
+
+重定向到
+* 成功/失败页面，优点是易于统计，缺点是需要分配额外的url，用户需要导航到之前的页面
+* 当前页面，带有flash信息作为反馈
+* 新的页面，带有flash信息作为反馈
+
+### 使用Express处理表单
+安装`npm install --save body-parser`来处理POST请求体
+
+在这种情况下使用303（302），不能使用301永久。否则浏览器会缓存重定向目的地。当第二次提交表单时，浏览器会直接访问目的地，表单就得不到处理。
+
+### 处理ajax表单
+通过`req.xhr || req.accepts('json,html')==='json'`判断ajax请求
+
+`res.send({success: true});`返回信息
+
+### 文件上传
+#### 使用Formidable，也可以使用ajax
+`npm install --save formidable`
+
+files就是上传文件数组，fields是参数数组
+```javascript
+var form = new formidable.IncomingForm();
+form.parse(req, function(err, fields, files){});
+```
+#### 使用jquery-file-upload上传
+依赖ImageMagick`apt-get install imagemagick`
+
+[下载](https://github.com/blueimp/jQuery-File-Upload/releases)
+
+[更多配置](https://github.com/blueimp/jQuery-File-Upload/wiki)
+
+```javascript
+jqupload.fileHandler({
+    uploadDir: function(){
+        return __dirname + '/public/uploads/' + now;
+    },
+    uploadUrl: function(){
+        return '/uploads/' + now;
+    },
+})(req, res, next);
+```
+
+
+
