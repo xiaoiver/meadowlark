@@ -25,6 +25,21 @@ var formidable = require('formidable');
 // jquery-upload-file文件上传
 var jqupload = require('jquery-file-upload-middleware');
 
+// cookies,apitokens等需要保密
+var credentials = require('./credentials.js');
+
+// nodemailer
+var nodemailer = require('nodemailer');
+var mailTransport = nodemailer.createTransport({
+	host: 'smtp.sina.com',
+	secureConnection: true,
+	port: 465,
+	auth: {
+		user: credentials.sinaSmtp.user,
+		pass: credentials.sinaSmtp.password,
+	}
+});
+
 // 设置端口
 app.set('port', process.env.PORT || 3000);
 
@@ -54,12 +69,49 @@ app.use('/upload', function(req, res, next){
 	})(req, res, next);
 });
 
+// cookie中间件
+app.use(require('cookie-parser')(credentials.cookieSecret));
+
+// session中间件
+app.use(require('express-session')());
+
+// flash message中间件
+app.use(function(req, res, next){
+	// 显示之后就删除session中的flash信息
+	res.locals.flash = req.session.flash;
+	delete req.session.flash;
+	next();
+});
+
+switch(app.get('env')){
+	case 'development':
+		app.use(require('morgan')('dev'));
+		break;
+	case 'production':
+		app.use(require('express-logger')({
+			path: __dirname + '/log/requests.log'
+		}));
+		break;
+}
+
 // 开始路由
 app.get('/', function(req, res){
 	res.render('home');
+	res.cookie('monster', 'nom nom');
+	res.cookie('signed_monster', 'nom nom', { signed: true });
 });
 
 app.get('/about', function(req, res){
+	// 测试发送邮件
+	mailTransport.sendMail({
+		from: '"xiaop" <pyqiverson@sina.com>',
+		to: 'mf1332047@software.nju.edu.cn',
+		subject: 'test',
+		test: '测试内容'
+	},function(err){
+		if(err) console.error('发送失败：' + err);
+	});
+
 	res.render('about', {
 		fortune: fortune.getFortune(),
 		pageTestScript: '/qa/tests-about.js'

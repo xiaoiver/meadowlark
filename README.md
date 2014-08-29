@@ -288,5 +288,76 @@ jqupload.fileHandler({
 })(req, res, next);
 ```
 
+## ch9 cookies&sessions
+
+`npm install --save cookie-parser`
+
+`res.cookie('signed_monster', 'nom nom', { signed: true });`
+options包括domain,path(包括子路径),maxAge(默认浏览器关闭就过期),secure(通过https发送),httpOnly(只允许server修改cookie，防止xss攻击)
+
+实现session两种方式
+* 都存放在cookie中
+* cookie中只存唯一的标识，其他存在服务端
+
+### 内存session
+简单但是缺点是服务器重启则丢失，多个服务器session存放位置不确定。ch13
+
+`npm install --save express-session`
+
+接受options包括key(存放标识符的cookie名，默认是connect.sid),store(默认是MemoryStore),cookie
+
+`req.session.userName`，通过delete删除，置为null并不会删除
+
+### 使用session实现flash  message
+通过在url中加入querystring也可以实现，但是丑陋而且会被加入书签保存。
+
+## ch10 中间件
+
+* app.VERB这样的路由处理器可以看成只处理一种http动词的中间件，反过来中间件也可以看成处理全部动词的处理器
+* 路由处理器需要path作为第一个参数，/*匹配全部path
+* 中间件可选path作为第一个参数，默认/*
+* 2参数req,res 3参数req,res,next 4参数error,req,res,next
+* 如果不调用next()，请求就会终止在这个中间件里，其他中间件和处理器不会得到调用。如果不通过res.send等方法返回客户端就会hang直到超时。
+
+app.use接受function作为参数，js中function返回一个function是很常见的
+`app.use(express.static(...));`
+
+### 常用中间件
+Connect中body-parser被移出了，需要单独安装
+`npm install --save connect`
+`var connect = require(connect);`
+
+body-parser包含json和urlencoded
+
+## ch11 email
+### 接收邮件
+[SimpleSMTP](http://bit.ly/simplesmtp) [Haraka](http://haraka.github.com)
+
+### html邮件
+阅读[html-email](http://bit.ly/writing_html_email)
+
+简单[HTML Email Boilerplate](http://htmlemailboilerplate.com)
+
+### Nodemailer
+`npm install --save nodemailer`
+
+默认使用smtp
+`npm install nodemailer-smtp-transport`
+
+Error: Greeting never received
+
+## ch12 生产环境
+开发阶段使用Morgan，色彩化输出`npm install --save morgan`
+
+生产环境使用express-logger，周期性记录日志`npm install --save express-logger`
+
+修改`node_modules/express-logger/logger.js`中变量`defaultInterval`改变日志周期
+
+`NODE_ENV=production node meadowlark.js`启动时改变生产环境
+
+
+
+
+
 
 
