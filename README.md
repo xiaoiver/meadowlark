@@ -347,6 +347,8 @@ body-parser包含json和urlencoded
 Error: Greeting never received
 
 ## ch12 生产环境
+
+### 日志
 开发阶段使用Morgan，色彩化输出`npm install --save morgan`
 
 生产环境使用express-logger，周期性记录日志`npm install --save express-logger`
@@ -355,9 +357,46 @@ Error: Greeting never received
 
 `NODE_ENV=production node meadowlark.js`启动时改变生产环境
 
+### 使用app cluster进行scaling out
+每个cpu创建一个独立的server
 
+如果script独立运行，`require.main === module`返回true，如果被其他脚本文件通过require加载，则返回false
 
+书中验证当前响应请求worker的代码有错误，缺少next()导致浏览器hang
 
+### 异常处理
+简单的异常可以通过定义在所有路由之后的中间件处理：
 
+```javascript
+app.get('/fail', function(req, res){
+    throw new Error('Nope!');
+});
+app.use(function(err, req, res, next){
+    console.error(err.stack);
+    app.status(500).render('500');
 
+});
+```
+
+但是异步抛出的异常如setTimeout(nextTick就是第二个参数为0的定时器)，当Node在空闲的时候才会处理。
+但是问题是此时该请求的上下文环境都没了，服务器只能关闭。
+
+```javascript
+app.get('/epic-fail', function(req, res){
+    process.nextTick(function(){
+        throw new Error('Kaboom!');
+    });
+});
+```
+
+使用cluster能解决这个问题，关闭一个worker会重启一个新的worker。
+
+#### 如何优雅地关闭？uncaughtException和domains
+推荐使用domains
+
+### 压力测试
+
+`npm install --save loadtest`
+
+p136
 

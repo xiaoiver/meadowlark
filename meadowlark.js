@@ -1,3 +1,6 @@
+var http = require('http');
+
+// 模拟数据
 var fortune = require('./lib/fortune.js');
 
 // express
@@ -83,6 +86,15 @@ app.use(function(req, res, next){
 	next();
 });
 
+// cluster记录当前响应worker
+app.use(function(req,res,next){
+	var cluster = require('cluster');
+	if(cluster.isWorker) console.log('Worker %d received request',
+		cluster.worker.id);
+	next();
+});
+
+// 测试不同生产环境下的日志输出
 switch(app.get('env')){
 	case 'development':
 		app.use(require('morgan')('dev'));
@@ -208,7 +220,20 @@ app.use(function(err, req, res, next){
 	res.render('500');
 });
 
-app.listen(app.get('port'), function(){
-	console.log( 'Express started on http://localhost:' +
-		app.get('port') + '; press Ctrl-C to terminate.' );
-});
+var server;
+
+function startServer() {
+    server = http.createServer(app).listen(app.get('port'), function(){
+      console.log( 'Express started in ' + app.get('env') +
+        ' mode on http://localhost:' + app.get('port') +
+        '; press Ctrl-C to terminate.' );
+    });
+}
+
+if(require.main === module){
+    // application run directly; start app server
+    startServer();
+} else {
+    // application imported as a module via "require": export function to create server
+    module.exports = startServer;
+}

@@ -18,6 +18,7 @@
     "express3-handlebars": "^0.5.2",
     "formidable": "^1.0.15",
     "jquery-file-upload-middleware": "^0.1.5",
+    "loadtest": "^1.2.0",
     "morgan": "^1.2.3",
     "nodemailer": "^1.2.1"
   }
