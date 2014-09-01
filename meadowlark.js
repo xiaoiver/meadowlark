@@ -1,9 +1,6 @@
 var http = require('http');
 var fs = require('fs');
 
-// 模拟数据
-var fortune = require('./lib/fortune.js');
-
 // 初始化数据
 var Vacation = require('./models/vacation.js');
 Vacation.find(function(err, vacations){
@@ -74,26 +71,11 @@ var handlebars = require('express3-handlebars')
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
-// formidable文件上传
-var formidable = require('formidable');
-
 // jquery-upload-file文件上传
 var jqupload = require('jquery-file-upload-middleware');
 
 // cookies,apitokens等需要保密
 var credentials = require('./credentials.js');
-
-// nodemailer
-var nodemailer = require('nodemailer');
-var mailTransport = nodemailer.createTransport({
-	host: 'smtp.sina.com',
-	secureConnection: true,
-	port: 465,
-	auth: {
-		user: credentials.sinaSmtp.user,
-		pass: credentials.sinaSmtp.password,
-	}
-});
 
 // 设置端口
 app.set('port', process.env.PORT || 3000);
@@ -221,28 +203,7 @@ app.use(function(req,res,next){
 });
 
 // 开始路由
-app.get('/', function(req, res){
-	res.render('home');
-	res.cookie('monster', 'nom nom');
-	res.cookie('signed_monster', 'nom nom', { signed: true });
-});
-
-app.get('/about', function(req, res){
-	// 测试发送邮件
-	mailTransport.sendMail({
-		from: '"xiaop" <pyqiverson@sina.com>',
-		to: 'mf1332047@software.nju.edu.cn',
-		subject: 'test',
-		test: '测试内容'
-	},function(err){
-		if(err) console.error('发送失败：' + err);
-	});
-
-	res.render('about', {
-		fortune: fortune.getFortune(),
-		pageTestScript: '/qa/tests-about.js'
-	});
-});
+require('./routes.js')(app);
 
 // 页面跳转测试
 app.get('/tours/hood-river', function(req, res){
@@ -250,14 +211,6 @@ app.get('/tours/hood-river', function(req, res){
 });
 app.get('/tours/request-group-rate', function(req, res){
 	res.render('tours/request-group-rate');
-});
-
-// 展示请求头信息
-app.get('/headers', function(req,res){
-	res.set('Content-Type','text/plain');
-	var s = '';
-	for(var name in req.headers) s += name + ': ' + req.headers[name] + '\n';
-	res.send(s);
 });
 
 // 测试section
@@ -295,121 +248,6 @@ app.post('/process',function(req, res){
 		console.log('Email (from visible form field): ' + req.body.email);
 		res.redirect(303, '/thank-you');
 	}	
-});
-
-// 测试vacation
-app.get('/set-currency/:currency', function(req,res){
-	req.session.currency = req.params.currency;
-	return res.redirect(303, '/vacations');
-});
-
-function convertFromUSD(value, currency){
-	switch(currency){
-		case 'USD': return value * 1;
-		case 'GBP': return value * 0.6;
-		case 'BTC': return value * 0.0023707918444761;
-		default: return NaN;
-	}
-}
-
-app.get('/vacations', function(req, res){
-	Vacation.find({ available: true }, function(err, vacations){
-		var currency = req.session.currency || 'USD';
-		var context = {
-			currency: currency,
-			vacations: vacations.map(function(vacation){
-				return {
-					sku: vacation.sku,
-					name: vacation.name,
-					description: vacation.description,
-					inSeason: vacation.inSeason,
-					price: convertFromUSD(vacation.priceInCents/100, currency),
-					qty: vacation.qty,
-				}
-			})
-		};
-		switch(currency){
-			case 'USD': context.currencyUSD = 'selected'; break;
-			case 'GBP': context.currencyGBP = 'selected'; break;
-			case 'BTC': context.currencyBTC = 'selected'; break;
-		}
-		res.render('vacations', context);
-	});
-});
-
-var VacationInSeasonListener = require('./models/vacationInSeasonListener.js');
-app.get('/notify-me-when-in-season', function(req, res){
-	res.render('notify-me-when-in-season', { sku: req.query.sku });
-});
-app.post('/notify-me-when-in-season', function(req, res){
-	VacationInSeasonListener.update(
-		{ email: req.body.email },
-		{ $push: { skus: req.body.sku } },
-		{ upsert: true },
-		function(err){
-		if(err) {
-			console.error(err.stack);
-			req.session.flash = {
-				type: 'danger',
-				intro: 'Ooops!',
-				message: 'There was an error processing your request.',
-			};
-			return res.redirect(303, '/vacations');
-		}
-		req.session.flash = {
-			type: 'success',
-			intro: 'Thank you!',
-			message: 'You will be notified when this vacation is in season.',
-		};
-		return res.redirect(303, '/vacations');
-		}
-	);
-});
-
-// formidable上传图片
-app.get('/contest/vacation-photo',function(req,res){
-	var now = new Date();
-	res.render('contest/vacation-photo',{
-		year: now.getFullYear(),month: now.getMonth()
-	});
-});
-
-var dataDir = __dirname + '/data';
-var vacationPhotoDir = dataDir + '/vacation-photo';
-fs.existsSync(dataDir) || fs.mkdirSync(dataDir);
-fs.existsSync(vacationPhotoDir) || fs.mkdirSync(vacationPhotoDir);
-
-function saveContestEntry(contestName, email, year, month, photoPath){
-	//..
-}
-
-app.post('/contest/vacation-photo/:year/:month', function(req, res){
-	var form = new formidable.IncomingForm();
-	form.parse(req, function(err, fields, files){
-		if(err) return res.redirect(303, '/error');
-		if(err){
-			res.session.flash = {
-				type: 'danger',
-				intro: 'Oops!',
-				message: 'There was an error processing your submission.'
-					+ 'Please try again.'
-			};
-			return res.redirect(303, '/contest/vacation-photo');
-		}
-		var photo = files.photo;
-		var dir = vacationPhotoDir + '/' + Date.now();
-		var path = dir + '/' + photo.name;
-		fs.mkdirSync(dir);
-		fs.renameSync(photo.path, path);
-		saveContestEntry('vacation-photo', fields.email, 
-			req.params.year, req.params.month, path);
-		req.session.flash = {
-			type: 'success',
-			intro: 'Good luck!',
-			message: 'You have been entered into the contest.'
-		};
-		res.redirect(303, '/contest/vacation-photo/entries');
-	});
 });
 
 // 测试jqfu上传

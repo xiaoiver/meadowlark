@@ -498,7 +498,97 @@ update test.sessions query: { sid: "WNBIQ-sJoUbiJ0rt1UDfu_hUJwb6ZFso" }
 
 使用Redis
 
-## ch14
+## ch14 路由
+
+路由中的路径会被转化成正则表达式
+
+`app.get('/staff/:city/:name', function(req, res){}）;`
+
+### 组织路由规则
+
+* 给路由处理器命名，不用inline的方式
+* 全写在一个文件中，不断增长
+
+### 在module中生命路由
+返回由包含method和handler属性的对象组成的数组
+
+```javascript
+var routes = require('./routes.js')();
+routes.forEach(function(route){
+    app[route.method](route.handler);
+})
+```
+
+将所有路由移动到routes.js中
+
+```javascript
+module.exports = function(app){
+    app.get('/', function(req,res){
+        app.render('home');
+    }))
+    //...
+};
+```
+
+在主文件中引入`require('./routes.js')(app);`
+
+进一步拆分，`/handlers/main.js`
+```javascript
+var fortune = require('../lib/fortune.js');
+exports.home = function(req, res){
+    res.render('home');
+};
+exports.about = function(req, res){
+    res.render('about', {
+        fortune: fortune.getFortune(),
+        pageTestScript: '/qa/tests-about.js'
+    } );
+};
+```
+routes.js中引入
+```javascript
+var main = require('./handlers/main.js');
+module.exports = function(app){
+    app.get('/', main.home);
+    app.get('/about', main.about);
+    //...
+};
+```
+
+### 自动显示view
+
+```javascript
+// 缓存
+var autoViews = {};
+var fs = require('fs');
+app.use(function(req,res,next){
+    var path = req.path.toLowerCase();
+    // 查看缓存
+    if(autoViews[path]) return res.render(autoViews[path]);
+    if(fs.existsSync(__dirname + '/views' + path + '.handlebars')){
+        autoViews[path] = path.replace(/^\//, ''); //去除头部的'/'
+        return res.render(autoViews[path]);
+    }
+    next();
+});
+```
+
+### 其他组织路由的方法
+
+> The two most popular approaches to route organization are 
+> namespaced routing and resourceful routing.
+
+express-namespace express-resource
+
+## ch15 REST API & JSON
+
+
+
+
+
+
+
+
 
 
 
