@@ -8,6 +8,7 @@
 		{{/if}}
 		<link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
 		<link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap-theme.min.css">
+		<link rel="stylesheet" href="/css/main.css">
 		<script src="//code.jquery.com/jquery-2.0.2.min.js"></script>
 	</head>
 	<body>
@@ -21,8 +22,10 @@
 			</div>
 		{{/if}}
 
+		<div class='container'>
+			{{{body}}}
+		</div>
 
-		{{{body}}}
 		{{{_sections.jquery}}}
 		{{#if showTests}}
 			<div id="mocha"></div>

@@ -19,6 +19,8 @@
     "formidable": "^1.0.15",
     "jquery-file-upload-middleware": "^0.1.5",
     "loadtest": "^1.2.0",
+    "mongoose": "^3.8.15",
+    "mongoose-session": "0.0.1",
     "morgan": "^1.2.3",
     "nodemailer": "^1.2.1"
   }

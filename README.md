@@ -392,11 +392,113 @@ app.get('/epic-fail', function(req, res){
 使用cluster能解决这个问题，关闭一个worker会重启一个新的worker。
 
 #### 如何优雅地关闭？uncaughtException和domains
-推荐使用domains
+推荐使用domains，位于所有路由和中间件之前
+
+```javascript
+app.use(function(req, res, next){
+    // 创建domain
+    var domain = require('domain').create();
+    domain.on('error', function(err){
+        console.error('DOMAIN ERROR CAUGHT\n', err.stack);
+        try {
+            // 给服务器最后5秒钟响应正在处理的请求，然后关闭
+            setTimeout(function(){
+                console.error('Failsafe shutdown.');
+                process.exit(1);
+            }, 5000);
+            // 如果在集群中，退出，集群将不会分配请求
+            var worker = require('cluster').worker;
+            if(worker) worker.disconnect();
+            // 服务器不接受请求
+            server.close();
+            try {
+                // 使用错误处理器响应出错的请求
+                next(err);
+            } catch(err){
+                // 如果处理器抛出异常，使用Node的api响应
+                console.error('Express error mechanism failed.\n', err.stack);
+                res.statusCode = 500;
+                res.setHeader('content-type', 'text/plain');
+                res.end('Server error.');
+            }
+        } catch(err){
+            // 如果都没法处理，客户端最终超时，记录日志
+            console.error('Unable to send 500 response.\n', err.stack);
+        }
+    });
+    // 添加res和req到domain中，两个对象任何方法抛出的异常都会被domain捕获
+    domain.add(req);
+    domain.add(res);
+    // 在domain上下文中执行下一个中间件
+    domain.run(next);
+});
+// 其余中间件和路由
+var server = http.createServer(app).listen(app.get('port'), function(){
+    console.log('Listening on port %d.', app.get('port'));
+});
+```
 
 ### 压力测试
 
 `npm install --save loadtest`
 
 p136
+
+## ch13 持久化
+
+### 文件系统持久化
+
+```javascript
+fs.mkdirSync(dir); //创建文件夹
+fs.renameSync(photo.path, path); //就是移动，formidable会将临时路径放在path中
+```
+### 数据库持久化
+
+NOSQL类型：文档，键值对
+
+使用MongoDB
+
+#### [Mongoose](http://mongoosejs.com/)
+ODM 对象文档映射，类似ORM
+
+`npm install --save mongoose`
+
+之前rails时配置的mongodb，默认的journal有2-3G
+`mongod --config /usr/local/MongoDB/mongod.conf --smallfiles`
+
+#### 数据库连接
+`mongoose.connect()`
+
+#### 创建Model和Schema
+view model将model提炼转换成更适合view展示的对象
+
+find查询条件
+```javascript
+Vacation.find({ available: true }, function(err, vacations){
+    
+});
+```
+
+update()
+`{ upsert: true }`当文档存在时，就更新，不然就创建。
+
+`{ $push: {}}`表示添加进array
+
+### 使用MongoDB存储session
+放弃使用session-mongoose
+
+`npm install --save session-mongoose`
+
+使用[mongoose-session](https://github.com/TheRealCharDev/mongoose-session)
+
+`npm install --save mongoose-session`
+
+在数据库中：
+update test.sessions query: { sid: "WNBIQ-sJoUbiJ0rt1UDfu_hUJwb6ZFso" }
+
+使用Redis
+
+## ch14
+
+
 
