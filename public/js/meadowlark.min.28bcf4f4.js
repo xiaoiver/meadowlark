@@ -1,0 +1,1 @@
+$(document).ready(function(){console.log("shopping cart initialized")}),$(document).ready(function(){console.log("contact forms initialized")}),$(document).ready(function(){console.log("shopping cart initialized")}),$(document).ready(function(){console.log("contact forms initialized")});

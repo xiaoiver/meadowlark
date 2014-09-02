@@ -65,11 +65,18 @@ var handlebars = require('express3-handlebars')
 	            if(!this._sections) this._sections = {};
 	            this._sections[name] = options.fn(this);
 	            return null;
-	        }
+	        },
+            static: function(name){
+                return require('./lib/static.js').map(name);
+            }
     	}
 	});
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
+
+// 设置js/css打包，使用默认_bundles
+var bundler = require('connect-bundle')(require('./config.js'));
+app.use(bundler);
 
 // jquery-upload-file文件上传
 var jqupload = require('jquery-file-upload-middleware');

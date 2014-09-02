@@ -620,6 +620,128 @@ p177这里代码有点小错误
 
 `npm install --save vhost`
 
+在/etc/hosts中增加
+`127.0.1.2 api.xiaop`
+
+http://api.xiaop:3000/attraction/5405333a7e3566640f560f78
+
+## ch16 静态内容
+* 多媒体内容，包括图片，音频/视频文件
+* css
+* js
+* 二进制文件下载
+
+### 性能考虑
+减少请求次数或者减少内容大小，前者更关键，包括组合资源和浏览器缓存。
+
+组合资源：小的图片组合成单独的sprite，通过css设置展示的偏移。
+
+[创建sprite](http://wearekiss.com/spritepad)
+
+### 在view中使用静态资源
+
+在handlebars中添加helpers，view中使用`{{static '/path'}}`
+
+将来这些静态资源可以移到CDN上，只要在static.js中配置baseUrl即可
+
+### 在css中使用静态资源
+css预处理器 less
+
+使用grunt自动运行任务，将less编译成css，运行`grunt less`编译
+
+`npm install --save-dev grunt-contrib-less`
+
+在less中使用自定义函数static
+```css
+body {
+    background-image: static("/img/background.png");
+}
+```
+
+需要在Gruntfile.js中配置less插件，增加自定义函数
+```javascript
+less: {
+    development: {
+        options: {
+            customFunctions: {
+                static: function(lessObject, name) {
+                    return 'url("' +
+                        require('./lib/static.js').map(name.value) +
+                        '")';
+                }
+            }
+        },
+        files: {
+            'public/css/main.css': 'less/main.less',
+        }
+    }
+}
+```
+
+### 在服务端脚本使中用静态资源
+`var static = require('./lib/static.js').map;`
+
+### 在客户端脚本中使用静态资源
+```javascript
+var IMG_CART_EMPTY = '{{static '/img/shop/cart_empty.png'}}';
+var IMG_CART_FULL = '{{static '/img/shop/cart_full.png'}}';
+```
+
+### 浏览器缓存  请求头
+Expires/Cache-Control：缓存最大时间，前者更好。浏览器发现缓存中有并且还没过期的资源，是不会发送Get请求的。这大大提高了性能尤其在移动端。
+
+Last-Modified/ETag：浏览器发送get请求，如果etag不变则不会下载资源。
+
+### 改变静态内容
+使用版本号表示变更，即使浏览器缓存，也会强制下载新资源。
+
+### bundling minification
+
+合并压缩js`npm install --save-dev grunt-contrib-uglify`，生成meadowlark.min.js
+
+合并压缩css`npm install --save-dev grunt-contrib-cssmin`，生成meadowlark.min.css
+
+用于生成fingerprint`npm install --save-dev grunt-hashres`，在meadowlark.min.js/css后增加一个版本号，并且会自动去main.handlebars中替换，这样浏览器就会强制下载新文件。
+
+grunt中任务是有顺序的，定义一个新任务处理静态资源
+`grunt.registerTask('static', ['less', 'cssmin', 'uglify', 'hashres']);`
+
+运行`grunt static`即可
+
+### 在开发中跳过bundling和minification
+由于所有js和css文件都被压缩到了一个文件中，给debug带来不便。
+
+使用[connect-bundle](https://github.com/Jammerwoch/connect-bundle)
+
+`npm install connect-bundle --save`
+
+在主文件中设置js/css打包，可以增加属性`contextProperty = 'myBundles'`，默认在view中通过_bundles访问
+```javascript
+var bundler = require('connect-bundle')(require('./config.js'));
+app.use(bundler);
+```
+
+css文件都放在<head>中，不用指定位置，js要，包括head，afterBodyOpen，afterBodyClose。
+
+修改Gruntfile.js中hashres的目的地指向config.js，这样每次执行static任务，替换的是config.js中的文件名。
+
+这样在开发模式下，view不会使用压缩的文件，只有在生产模式下会使用带版本号的js/css文件
+`NODE_ENV=production node meadowlark.js`
+
+### QA 检查未映射的静态资源
+在Gruntfile.js中注册插件，定义规则
+`npm install --save-dev grunt-lint-pattern`
+
+## ch17 Express MVC
+
+
+
+
+
+
+
+
+
 
 
 

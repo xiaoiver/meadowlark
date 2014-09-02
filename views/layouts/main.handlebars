@@ -4,15 +4,21 @@
 		<title>Meadowlark Travel</title>
 		{{{_sections.head}}}
 		{{#if showTests}}
-			<link ref="stylesheet" href="/vendor/mocha.css">
+			<link ref="stylesheet" href="{{static '/vendor/mocha.css'}}">
 		{{/if}}
-		<link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
-		<link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap-theme.min.css">
-		<link rel="stylesheet" href="/css/main.css">
+		<link rel="stylesheet" href="{{static '/vendor/bootstrap/css/bootstrap.min.css'}}">
+		<link rel="stylesheet" href="{{static '/vendor/bootstrap/css/bootstrap-theme.min.css'}}">
+		
 		<script src="//code.jquery.com/jquery-2.0.2.min.js"></script>
+		{{#each _bundles.js.head}}
+			<script src="{{static .}}"></script>
+		{{/each}}
+		{{#each _bundles.css}}
+			<link rel="stylesheet" href="{{static .}}">
+		{{/each}}
 	</head>
 	<body>
-		<header><img src="/img/logo.png" alt="MeadowLark"></header>
+		<header><img src="{{static '/img/logo.png'}}" alt="MeadowLark"></header>
 
 		{{#if flash}}
 			<div class="alert alert-dismissible alert-{{flash.type}}">
@@ -29,19 +35,19 @@
 		{{{_sections.jquery}}}
 		{{#if showTests}}
 			<div id="mocha"></div>
-			<script src="/vendor/mocha.js"></script>
-			<script src="/vendor/chai.js"></script>
+			<script src="{{static '/vendor/mocha.js'}}"></script>
+			<script src="{{static '/vendor/chai.js'}}"></script>
 			<script>
 				mocha.ui('tdd');
 				var assert = chai.assert;
 			</script>
-			<script src="/qa/tests-global.js"></script>
+			<script src="{{static '/qa/tests-global.js'}}"></script>
 			{{#if pageTestScript}}
 				<script src="{{pageTestScript}}"></script>
 			{{/if}}
 			<script>mocha.run();</script>
 		{{/if}}
 
-		<script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
+		<script src="{{static '/vendor/bootstrap/js/bootstrap.min.js'}}"></script>
 	</body>
 </html>
