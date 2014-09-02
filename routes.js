@@ -1,5 +1,6 @@
 var main = require('./handlers/main.js');
 var vacation = require('./handlers/vacation.js');
+var attraction = require('./handlers/attraction.js');
 
 module.exports = function(app){
 	// 主页和about页面
@@ -16,4 +17,9 @@ module.exports = function(app){
 	// formidable上传图片
 	app.get('/contest/vacation-photo', vacation.showUploadPhoto);
 	app.post('/contest/vacation-photo/:year/:month', vacation.uploadPhoto);
+
+	// 使用express提供api
+	// app.get('/api/attractions', attraction.list);
+	// app.post('/api/attraction', attraction.create);
+	// app.get('/api/attraction/:id', attraction.show);
 };

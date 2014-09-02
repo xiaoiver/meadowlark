@@ -77,6 +77,9 @@ var jqupload = require('jquery-file-upload-middleware');
 // cookies,apitokens等需要保密
 var credentials = require('./credentials.js');
 
+// REST插件
+var rest = require('connect-rest');
+
 // 设置端口
 app.set('port', process.env.PORT || 3000);
 
@@ -182,7 +185,7 @@ app.use(require('cookie-parser')(credentials.cookieSecret));
 var session    = require('express-session');
 app.use(session({
 	key: 'session',
-    secret: credentials.cookieSecret,
+    secret: credentials.sessionSecret,
     store: require('mongoose-session')(mongoose)
 }));
 
@@ -255,13 +258,83 @@ app.get('/test-jqfu',function(req,res){
 	res.render('test-jqfu');
 });
 
-// custom 404 page
+/*******rest api*********/
+// api配置
+var apiOptions = {
+    //context: '/api',
+    context: '/',
+    domain: require('domain').create(),
+};
+
+// 为api配置domain
+apiOptions.domain.on('error', function(err){
+    console.log('API domain error.\n', err.stack);
+    setTimeout(function(){
+        console.log('Server shutting down after API domain error.');
+        process.exit(1);
+    }, 5000);
+    server.close();
+    var worker = require('cluster').worker;
+    if(worker) worker.disconnect();
+});
+
+// 把rest中间件加入管道，使用api子域名
+var vhost = require('vhost');
+app.use(vhost('api.*', rest.rester(apiOptions)));
+
+// 使用REST插件提供api
+var Attraction = require('./models/attraction.js');
+
+rest.get('/attractions', function(req, content, cb){
+    Attraction.find({ approved: true }, function(err, attractions){
+        if(err) return cb({ error: 'Internal error.' });
+        cb(null, attractions.map(function(a){
+            return {
+                name: a.name,
+                description: a.description,
+                location: a.location,
+            };
+        }));
+    });
+});
+
+rest.post('/attraction', function(req, content, cb){
+    var a = new Attraction({
+        name: req.body.name,
+        description: req.body.description,
+        location: { lat: req.body.lat, lng: req.body.lng },
+        history: {
+            event: 'created',
+            email: req.body.email,
+            date: new Date(),
+        },
+        approved: false,
+    });
+    a.save(function(err, a){
+        if(err) return cb({ error: 'Unable to add attraction.' });
+        cb(null, { id: a._id });
+    });
+});
+
+rest.get('/attraction/:id', function(req, content, cb){
+    Attraction.findById(req.params.id, function(err, a){
+        if(err) return cb({ error: 'Unable to retrieve attraction.' });
+        cb(null, {
+            name: a.name,
+            id: a._id,
+            description: a.description,
+            location: a.location,
+        });
+    });
+});
+
+// 404处理器
 app.use(function(req, res, next){
 	res.status(404);
 	res.render('404');
 });
 
-// custom 500 page
+// 500处理器
 app.use(function(err, req, res, next){
 	console.error(err.stack);
 	res.status(500);

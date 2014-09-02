@@ -87,6 +87,7 @@ Grunt依赖插件完成工作如mocha,jshint和linkchecker。由于linkchecker�
 * grunt-contrib-jshint只允许包含文件，不想包含node_modules和public/vendor下的文件
 * `/**/`表示所有子文件夹下的文件
 * `grunt.option()`可以接收命令行传递的参数`grunt deploy --target=staging`
+* grunt --force强制执行所有测试，不会中断
 
 ### 持续集成
 Travis CI
@@ -581,6 +582,43 @@ app.use(function(req,res,next){
 express-namespace express-resource
 
 ## ch15 REST API & JSON
+
+`mocha -u tdd -R spec qa/tests-api.js`
+
+### [CORS](https://github.com/troygoode/node-cors)
+通过Access-Control-Allow-Origin请求头实现
+
+`npm install --save cors`
+
+暴露api，
+`app.use('/api', require('cors')());`
+
+### restler
+浏览器只知道如何处理get/post请求，在测试中使用，发出get/post请求
+`npm install --save-dev restler`
+
+### 使用Express提供api
+我放在`/handlers/attraction`中
+
+### 使用REST插件提供api
+`npm install --save connect-rest`
+
+api配置代码的位置要在rest.VERB之前，不然context不起作用
+```javascript
+var apiOptions = {
+    context: '/api',
+    domain: require('domain').create(),
+};
+```
+
+p177这里代码有点小错误
+* findById回调函数中应为"a"而不是"attraction"
+* 返回的对象中加入`id: a._id`，测试时要对比id
+
+### 使用子域名
+使用子域名api.example.com最大程度区别站点和api
+
+`npm install --save vhost`
 
 
 

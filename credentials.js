@@ -1,8 +1,9 @@
 module.exports = {
 	cookieSecret: 'your cookie secret goes here',
-	sinaSmtp: {
-		user: 'pyqiverson@sina.com',
-		password: '1991411'
+	sessionSecret: 'your session secret goes here',
+	gmailSmtp: {
+		user: 'pyqiverson@gmail.com',
+		password: 'pyq1991411'
 	},
 	mongo: {
 		development: {

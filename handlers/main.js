@@ -7,12 +7,10 @@ var credentials = require('../credentials.js');
 // nodemailer
 var nodemailer = require('nodemailer');
 var mailTransport = nodemailer.createTransport({
-	host: 'smtp.sina.com',
-	secureConnection: true,
-	port: 465,
+	service: 'Gmail',
 	auth: {
-		user: credentials.sinaSmtp.user,
-		pass: credentials.sinaSmtp.password,
+		user: credentials.gmailSmtp.user,
+		pass: credentials.gmailSmtp.password,
 	}
 });
 
