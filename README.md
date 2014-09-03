@@ -721,7 +721,7 @@ var bundler = require('connect-bundle')(require('./config.js'));
 app.use(bundler);
 ```
 
-css文件都放在<head>中，不用指定位置，js要，包括head，afterBodyOpen，afterBodyClose。
+css文件都放在`<head>`中，不用指定位置，js要，包括head，afterBodyOpen，afterBodyClose。
 
 修改Gruntfile.js中hashres的目的地指向config.js，这样每次执行static任务，替换的是config.js中的文件名。
 
@@ -733,6 +733,20 @@ css文件都放在<head>中，不用指定位置，js要，包括head，afterBod
 `npm install --save-dev grunt-lint-pattern`
 
 ## ch17 Express MVC
+
+### view model
+使用underscore方便地从model转换到view model，删除不想暴露的属性(omit)，进行扩展(extend)
+
+`npm install --save underscore`
+
+array.map()映射
+
+### controller
+和router的区别就是controller会分类相似的功能，其实前面将功能放在handlers文件夹下，routers.js负责路由就是做这样一件事。
+
+## ch18 安全性
+
+
 
 
 
