@@ -746,6 +746,81 @@ array.map()映射
 
 ## ch18 安全性
 
+### 使用https保证通信安全
+通过openssl生成私钥(pem)和认证(会被发送到客户端用于建立安全连接)
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout meadowlark.pem -out meadowlark.crt
+
+### 在express中使用
+```javascript
+var https = require('https');
+var options = {
+    key: fs.readFileSync(__dirname + '/ssl/meadowlark.pem');
+    cert: fs.readFileSync(__dirname + '/ssl/meadowlark.crt');
+};
+https.createServer(options, app).listen(app.get('port'), function(){
+    console.log('Express started in ' + app.get('env') +
+    ' mode on port ' + app.get('port') + '.');
+});
+```
+
+### CSRF跨站请求伪造
+确保请求来自自己的网站。通过向浏览器传递一个token，当提交表单时，服务端进行验证。
+
+使用csurf`npm install --save csurf`，必须在cookie-parser和connect-session这两个中间件引入之后
+
+```javascript
+app.use(require('csurf')());
+app.use(function(req, res, next){
+    res.locals._csrfToken = req.csrfToken();
+    next();
+});
+```
+
+在表单或者ajax请求中，增加一个字段`_csrf`，中间件会验证，验证失败会抛出异常
+```html
+<input type="hidden" name="_csrf" value="{{_csrfToken}}">
+```
+
+如果有api，不希望被csrf中间件干扰，可以将api在csrf中间件之前引入。
+
+### Passport
+
+`npm install --save passport passport-github`
+
+本地验证策略
+
+定义好serializeUser和deserializeUser方法，
+只要通过验证，在session中就能通过req.session.passport.user访问对应的User对象
+```javascript
+var User = require('../models/user.js'),
+    passport = require('passport'),
+    FacebookStrategy = require('passport-facebook').Strategy;
+passport.serializeUser(function(user, done){
+    done(null, user._id);//将mongodb分配的'_id'保存在session中
+});
+passport.deserializeUser(function(id, done){
+    User.findById(id, function(err, user){
+        if(err || !user) return done(err, null);
+        done(null, user);
+    });
+});
+```
+
+两个错误：
+* p225解序列化的user通过req.user访问，原文中req.session.passport.user只能访问到之前序列化存储的id
+* `callbackURL: '/auth/facebook/callback?redirect=' + encodeURIComponent(req.query.redirect)`此处有问题，当queryString中没有redirect时，encodeURIComponent会将undefined编码成“undefined”，这样验证通过重定向时会404。
+
+### 基于角色的认证
+
+`next('route');`和`next()`的区别：
+一个route可以包含多个中间件：middleware1通过调用`next()`将控制权交给middleware2，而`next('route')`寻找下一个route
+
+```javascript
+app.get('',middleware1,middleware2,function(req,res,next){});
+```
+
+## ch19 集成第三方api
+
 
 
 

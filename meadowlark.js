@@ -1,3 +1,4 @@
+//var https = require('https');
 var http = require('http');
 var fs = require('fs');
 
@@ -212,6 +213,13 @@ app.use(function(req,res,next){
 	next();
 });
 
+// 使用csrf
+app.use(require('csurf')());
+app.use(function(req, res, next){
+    res.locals._csrfToken = req.csrfToken();
+    next();
+})
+
 // 开始路由
 require('./routes.js')(app);
 
@@ -264,6 +272,49 @@ app.post('/process',function(req, res){
 app.get('/test-jqfu',function(req,res){
 	res.render('test-jqfu');
 });
+
+// passport-github认证
+var auth = require('./lib/auth.js')(app, {
+        providers: credentials.authProviders,
+        successRedirect: '/account',
+        failureRedirect: '/unauthorized'
+});
+auth.init();
+auth.registerRoutes();
+
+//基于角色的认证
+function allow(req,res,next,roles) {
+    var user = req.user;
+    if(user && roles.split(',').indexOf(user.role)!==-1) return true;
+}
+
+function customerOnly(req, res, next){
+    var user = req.user;
+    if(user && user.role==='customer') return next();
+    res.redirect(303, '/unauthorized');
+}
+
+function employeeOnly(req, res, next){
+    var user = req.user;
+    if(user && user.role==='employee') return next();
+    next('route');
+}
+
+app.get('/account', function(req, res, next){
+    if(allow(req, res, next, 'customer,employee'))
+        res.render('account',{user: req.user});
+    else
+        res.redirect(303, '/unauthorized');
+});
+
+app.get('/sales', employeeOnly, function(req, res){
+    res.render('sales');
+});
+
+app.get('/unauthorized', function(req, res){
+    res.render('unauthorized');
+});
+
 
 /*******rest api*********/
 // api配置
@@ -348,6 +399,12 @@ app.use(function(err, req, res, next){
 	res.render('500');
 });
 
+// https配置
+// var options = {
+//     key: fs.readFileSync(__dirname + '/ssl/meadowlark.pem'),
+//     cert: fs.readFileSync(__dirname + '/ssl/meadowlark.crt')
+// };
+
 var server;
 
 function startServer() {
@@ -356,6 +413,12 @@ function startServer() {
         ' mode on http://localhost:' + app.get('port') +
         '; press Ctrl-C to terminate.' );
     });
+    // 使用https
+    // server = https.createServer(options, app).listen(app.get('port'), function(){
+    //   console.log( 'Express started in ' + app.get('env') +
+    //     ' mode on http://localhost:' + app.get('port') +
+    //     '; press Ctrl-C to terminate.' );
+    // });
 }
 
 if(require.main === module){
